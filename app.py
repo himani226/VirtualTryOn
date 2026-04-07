@@ -1,27 +1,30 @@
 import streamlit as st
-import io
-from PIL import Image
+import sys
+import os
 
-# --- WORKAROUND FOR NAMESPACE ERROR ---
+# Defensive import to handle Google namespace collision
 try:
-    from google import genai
+    import google.genai as genai
     from google.genai import types
-except ImportError:
-    st.error("🚨 Critical Error: The 'google-genai' package is not installed correctly on the server.")
-    st.info("To fix this: Ensure 'google-genai' is in your requirements.txt and REBOOT your Streamlit app.")
-    st.stop()
+except (ImportError, AttributeError):
+    try:
+        # Fallback for specific cloud pathing issues
+        from google import genai
+        from google.genai import types
+    except ImportError:
+        st.error("🚨 Namespace Collision: The server's 'google' folder is blocking the Gemini SDK.")
+        st.info("FIX: Go to App Settings > Advanced, change Python to 3.12, and REBOOT.")
+        st.stop()
 
-# Page Config
+# --- THE REST OF YOUR CODE ---
 st.set_page_config(page_title="AI Virtual Try-On", layout="wide")
 
-# --- API KEY CONFIG ---
-# This pulls from the Secrets you set in the Streamlit Dashboard
 try:
-    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-    client = genai.Client(api_key=GEMINI_API_KEY)
-except Exception:
-    st.error("🔑 API Key Missing! Please add 'GEMINI_API_KEY' to your Streamlit Cloud Secrets.")
+    client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+except Exception as e:
+    st.error(f"Configuration Error: {e}")
     st.stop()
+
 
 st.title("👕 AI Virtual Try-On")
 st.subheader("Upload a photo of yourself and the clothes you want to try!")
