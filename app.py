@@ -1,20 +1,17 @@
 import streamlit as st
-import sys
-import os
+import google.generativeai as genai  # Use the legacy import
+from PIL import Image
+import io
 
-# Defensive import to handle Google namespace collision
-try:
-    import google.genai as genai
-    from google.genai import types
-except (ImportError, AttributeError):
-    try:
-        # Fallback for specific cloud pathing issues
-        from google import genai
-        from google.genai import types
-    except ImportError:
-        st.error("🚨 Namespace Collision: The server's 'google' folder is blocking the Gemini SDK.")
-        st.info("FIX: Go to App Settings > Advanced, change Python to 3.12, and REBOOT.")
-        st.stop()
+# Page Config
+st.set_page_config(page_title="AI Virtual Try-On", layout="wide")
+
+# Configure the API Key
+if "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+else:
+    st.error("Missing GEMINI_API_KEY in Secrets!")
+    st.stop()
 
 # --- THE REST OF YOUR CODE ---
 st.set_page_config(page_title="AI Virtual Try-On", layout="wide")
